@@ -14,6 +14,7 @@ func main() {
 func handleRequests() {
 	http.HandleFunc("/election", handlers.ElectionView)
 
-	log.Println("Listening on port", ":8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	port := ":8888"
+	log.Println("Listening on port", port)
+	log.Fatal(http.ListenAndServe(port, nil))
 }

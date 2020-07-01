@@ -20,23 +20,39 @@ func socketMessaging(conn *websocket.Conn, count int) {
 	}
 
 	// receive messages
-	go func() {
-		for {
-			_, message, err := conn.ReadMessage()
-			if err != nil {
-				log.Println(err)
-				return
-			}
-			log.Println(message)
-		}
-	}()
+	go responseMessage(conn, c)
 
-	// stream cluster events to client
+	// stream cluster events to client with a delay
 	for {
+		time.Sleep(time.Millisecond * 50)
 		err := conn.WriteJSON(c.ReadEvent())
 		if err != nil {
 			log.Println(err)
 			return
 		}
+	}
+}
+
+func responseMessage(conn *websocket.Conn, c *cluster.Cluster) {
+	type message struct {
+		Action string
+		ID     string
+	}
+
+	for {
+		msg := message{}
+		err := conn.ReadJSON(&msg)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		switch action := msg.Action; action {
+		case "STOP":
+			c.StopServer(msg.ID)
+		case "START":
+			c.StartServer(msg.ID)
+		}
+
 	}
 }
