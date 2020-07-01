@@ -4,12 +4,12 @@ import (
 	"log"
 	"time"
 
-	cluster "github.com/LostLaser/recoverE"
+	election "github.com/LostLaser/election"
 	"github.com/gorilla/websocket"
 )
 
 func socketMessaging(conn *websocket.Conn, count int) {
-	c := cluster.New(count, time.Second*4)
+	c := election.New(count, time.Second*4)
 	defer c.Purge()
 	defer conn.Close()
 
@@ -33,7 +33,7 @@ func socketMessaging(conn *websocket.Conn, count int) {
 	}
 }
 
-func responseMessage(conn *websocket.Conn, c *cluster.Cluster) {
+func responseMessage(conn *websocket.Conn, c *election.Cluster) {
 	type message struct {
 		Action string
 		ID     string
