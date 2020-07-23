@@ -25,10 +25,14 @@ func ElectionView(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "Query parameter 'count' missing or invalid", http.StatusBadRequest)
 	}
-	if count > 6 {
-		count = 6
-	} else if count < 0 {
-		count = 2
+
+	max := 5
+	min := 2
+
+	if count > max {
+		count = max
+	} else if count < min {
+		count = min
 	}
 
 	socketMessaging(conn, count)
