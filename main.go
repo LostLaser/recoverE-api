@@ -3,9 +3,13 @@ package main
 import (
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/LostLaser/recoverE-api/handlers"
+	"github.com/LostLaser/recoverE-api/utils"
+)
+
+var (
+	port = utils.Get("port").(string)
 )
 
 func main() {
@@ -15,10 +19,6 @@ func main() {
 func handleRequests() {
 	http.HandleFunc("/election", handlers.ElectionView)
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8888"
-	}
 	log.Println("Listening on port", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }

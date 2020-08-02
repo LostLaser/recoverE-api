@@ -5,7 +5,14 @@ import (
 	"time"
 
 	election "github.com/LostLaser/election"
+	"github.com/LostLaser/recoverE-api/utils"
 	"github.com/gorilla/websocket"
+)
+
+var (
+	stopMessage  = utils.Get("node.process.stop-message").(string)
+	startMessage = utils.Get("node.process.start-message").(string)
+	setupMessage = utils.Get("node.process.initial-node-setup").(string)
 )
 
 func socketMessaging(conn *websocket.Conn, count int) {
@@ -14,7 +21,7 @@ func socketMessaging(conn *websocket.Conn, count int) {
 	defer conn.Close()
 
 	ids := c.ServerIds()
-	err := conn.WriteJSON(map[string]interface{}{"action": "SETUP", "payload": ids})
+	err := conn.WriteJSON(map[string]interface{}{"action": setupMessage, "payload": ids})
 	if err != nil {
 		log.Println(err)
 	}
@@ -24,7 +31,7 @@ func socketMessaging(conn *websocket.Conn, count int) {
 
 	// stream cluster events to client with a delay
 	for {
-		time.Sleep(time.Millisecond * 50)
+		time.Sleep(time.Millisecond * 200)
 		err := conn.WriteJSON(c.ReadEvent())
 		if err != nil {
 			log.Println(err)
@@ -48,9 +55,9 @@ func responseMessage(conn *websocket.Conn, c *election.Cluster) {
 		}
 
 		switch action := msg.Action; action {
-		case "STOP":
+		case stopMessage:
 			c.StopServer(msg.ID)
-		case "START":
+		case startMessage:
 			c.StartServer(msg.ID)
 		}
 
