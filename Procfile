@@ -1,1 +1,1 @@
-web: recover-e
+web: recoverE-api
