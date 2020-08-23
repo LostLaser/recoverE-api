@@ -1,4 +1,4 @@
-package utils
+package config
 
 import (
 	"log"
@@ -8,7 +8,7 @@ import (
 
 // Get should be called to retrieve any value from the yaml.
 func Get(propertyName string) interface{} {
-	viper.AddConfigPath("./utils")
+	viper.AddConfigPath("./config")
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.BindEnv("port")
@@ -18,5 +18,9 @@ func Get(propertyName string) interface{} {
 	}
 	viper.AutomaticEnv()
 
-	return viper.Get(propertyName)
+	v := viper.Get(propertyName)
+	if v == nil {
+		panic("Can't find property: " + propertyName)
+	}
+	return v
 }

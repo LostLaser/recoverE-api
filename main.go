@@ -4,12 +4,12 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/LostLaser/recoverE-api/handlers"
-	"github.com/LostLaser/recoverE-api/utils"
+	"github.com/LostLaser/recoverE-api/config"
+	"github.com/LostLaser/recoverE-api/controller"
 )
 
 var (
-	port = utils.Get("port").(string)
+	port = config.Get("port").(string)
 )
 
 func main() {
@@ -17,7 +17,7 @@ func main() {
 }
 
 func handleRequests() {
-	http.HandleFunc("/election", handlers.ElectionView)
+	http.HandleFunc("/election", controller.ElectionView)
 
 	log.Println("Listening on port", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))

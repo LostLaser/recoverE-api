@@ -1,10 +1,17 @@
-package handlers
+package controller
 
 import (
 	"net/http"
 	"strconv"
 
+	"github.com/LostLaser/recoverE-api/config"
+	"github.com/LostLaser/recoverE-api/service"
 	"github.com/gorilla/websocket"
+)
+
+var (
+	minNodes = config.Get("election.node.max").(int)
+	maxNodes = config.Get("election.node.min").(int)
 )
 
 // ElectionView handles the full interaction
@@ -25,15 +32,16 @@ func ElectionView(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "Query parameter 'count' missing or invalid", http.StatusBadRequest)
 	}
-
-	max := 5
-	min := 2
-
-	if count > max {
-		count = max
-	} else if count < min {
-		count = min
+	electionType := keys.Get("election_type")
+	if electionType == "" {
+		http.Error(w, "Query parameter 'electionType' missing or invalid", http.StatusBadRequest)
 	}
 
-	socketMessaging(conn, count)
+	if count > maxNodes {
+		count = maxNodes
+	} else if count < minNodes {
+		count = minNodes
+	}
+
+	service.SocketMessaging(conn, count)
 }

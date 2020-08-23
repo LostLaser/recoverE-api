@@ -1,0 +1,14 @@
+election:
+    node:
+        process:
+            initial-node-setup: SETUP
+            start-message: START
+            stop-message: STOP
+        max: 5
+        min: 2
+    types:
+        - bully
+        - ring
+
+port: "8888"
+

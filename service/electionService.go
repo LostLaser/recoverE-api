@@ -1,21 +1,22 @@
-package handlers
+package service
 
 import (
 	"log"
 	"time"
 
-	election "github.com/LostLaser/election"
-	"github.com/LostLaser/recoverE-api/utils"
+	"github.com/LostLaser/election"
+	"github.com/LostLaser/recoverE-api/config"
 	"github.com/gorilla/websocket"
 )
 
 var (
-	stopMessage  = utils.Get("node.process.stop-message").(string)
-	startMessage = utils.Get("node.process.start-message").(string)
-	setupMessage = utils.Get("node.process.initial-node-setup").(string)
+	stopMessage  = config.Get("election.node.process.stop-message").(string)
+	startMessage = config.Get("election.node.process.start-message").(string)
+	setupMessage = config.Get("election.node.process.initial-node-setup").(string)
 )
 
-func socketMessaging(conn *websocket.Conn, count int) {
+// SocketMessaging handles communication pertaining to created cluster
+func SocketMessaging(conn *websocket.Conn, count int) {
 	c := election.New(count, time.Second*4)
 	defer c.Purge()
 	defer conn.Close()
