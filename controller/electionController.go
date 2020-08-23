@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
@@ -10,8 +11,8 @@ import (
 )
 
 var (
-	minNodes = config.Get("election.node.max").(int)
-	maxNodes = config.Get("election.node.min").(int)
+	minNodes = config.Get("election.node.min").(int)
+	maxNodes = config.Get("election.node.max").(int)
 )
 
 // ElectionView handles the full interaction
@@ -37,6 +38,7 @@ func ElectionView(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Query parameter 'electionType' missing or invalid", http.StatusBadRequest)
 	}
 
+	log.Print(maxNodes, minNodes)
 	if count > maxNodes {
 		count = maxNodes
 	} else if count < minNodes {
