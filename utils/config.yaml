@@ -1,0 +1,8 @@
+node:
+    process:
+        initial-node-setup: SETUP
+        start-message: START
+        stop-message: STOP
+
+port: "8888"
+
