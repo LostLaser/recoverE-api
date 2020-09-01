@@ -12,3 +12,6 @@ election:
 
 port: "8888"
 
+allowed-origins:
+    - http://localhost:8080
+    - https://recover-e.herokuapp.com

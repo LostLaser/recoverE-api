@@ -15,14 +15,17 @@ var (
 	setupMessage = config.Get("election.node.process.initial-node-setup").(string)
 )
 
-// SocketMessaging handles communication pertaining to created cluster
-func SocketMessaging(conn *websocket.Conn, count int) {
+// Messenger handles communication pertaining to created cluster
+func Messenger(conn *websocket.Conn, count int) {
 	c := election.New(count, time.Second*4)
 	defer c.Purge()
 	defer conn.Close()
 
 	ids := c.ServerIds()
-	err := conn.WriteJSON(map[string]interface{}{"action": setupMessage, "payload": ids})
+	err := conn.WriteJSON(map[string]interface{}{
+		"action":  setupMessage,
+		"payload": ids,
+	})
 	if err != nil {
 		log.Println(err)
 	}
