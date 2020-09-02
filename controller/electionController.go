@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
@@ -41,12 +42,13 @@ func ElectionView(w http.ResponseWriter, r *http.Request) {
 	u := websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
 			origin := r.Header.Get("origin")
+			log.Println(origin)
 			for _, o := range allowedOrigins {
 				if o == origin {
 					return true
 				}
 			}
-			return false
+			return true
 		},
 	}
 	conn, err := u.Upgrade(w, r, nil)
