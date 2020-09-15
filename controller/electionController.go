@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/LostLaser/election"
 	"github.com/LostLaser/recoverE-api/config"
 	"github.com/LostLaser/recoverE-api/service"
 	"github.com/gorilla/websocket"
@@ -54,5 +55,16 @@ func ElectionView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	service.Messenger(conn, count)
+	// Cluster setup
+	var electionAlgorithm election.Election
+	switch electionType {
+	case "bully":
+		electionAlgorithm = &election.BullyElection{}
+	case "ring":
+		electionAlgorithm = &election.RingElection{}
+	default:
+		electionAlgorithm = &election.BullyElection{}
+	}
+
+	service.Messenger(conn, count, electionAlgorithm)
 }

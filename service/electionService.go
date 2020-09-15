@@ -16,8 +16,8 @@ var (
 )
 
 // Messenger handles communication pertaining to created cluster
-func Messenger(conn *websocket.Conn, count int) {
-	c := election.New(count, time.Second*4)
+func Messenger(conn *websocket.Conn, count int, algorithm election.Election) {
+	c := election.New(count, time.Second*4, algorithm)
 	defer c.Purge()
 	defer conn.Close()
 
