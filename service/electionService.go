@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/LostLaser/election"
+	"github.com/LostLaser/election/server"
 	"github.com/LostLaser/recoverE-api/config"
 	"github.com/gorilla/websocket"
 )
@@ -16,8 +17,8 @@ var (
 )
 
 // Messenger handles communication pertaining to created cluster
-func Messenger(conn *websocket.Conn, count int, algorithm election.Election) {
-	c := election.New(count, time.Second*4, algorithm)
+func Messenger(conn *websocket.Conn, count int, electionSetup server.Setup) {
+	c := election.New(electionSetup, count, time.Second*4)
 	defer c.Purge()
 	defer conn.Close()
 
