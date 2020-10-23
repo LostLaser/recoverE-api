@@ -1,6 +1,6 @@
 module github.com/LostLaser/recoverE-api
 
-go 1.13
+go 1.15
 
 require (
 	github.com/LostLaser/election v0.1.1
@@ -8,4 +8,4 @@ require (
 	github.com/spf13/viper v1.7.1
 )
 
-replace github.com/LostLaser/election => ../election
+// replace github.com/LostLaser/election => ../election
