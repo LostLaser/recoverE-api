@@ -1,8 +1,7 @@
 package config
 
 import (
-	"log"
-
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -14,7 +13,7 @@ var (
 func Get(propertyName string) interface{} {
 	setup()
 	if !viper.IsSet(propertyName) {
-		panic("Can't find property: " + propertyName)
+		log.Fatal("Can't find property: " + propertyName)
 	}
 	return viper.Get(propertyName)
 }
@@ -29,7 +28,7 @@ func setup() {
 	viper.BindEnv("port")
 	err := viper.ReadInConfig()
 	if err != nil {
-		log.Printf("Config file get error: #%v ", err)
+		log.Fatal("Config file get error: #%v ", err)
 	}
 	viper.AutomaticEnv()
 

@@ -9,6 +9,7 @@ election:
     types:
         - bully
         - ring
+    timeout-minutes: 10
 
 port: "8888"
 
