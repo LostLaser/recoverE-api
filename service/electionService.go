@@ -11,10 +11,11 @@ import (
 )
 
 var (
-	stopMessage       = config.Get("election.node.process.stop-message").(string)
-	startMessage      = config.Get("election.node.process.start-message").(string)
-	setupMessage      = config.Get("election.node.process.initial-node-setup").(string)
-	connectionTimeout = config.Get("election.timeout-minutes").(int)
+	stopMessage   = config.Get("election.node.process.stop-message").(string)
+	startMessage  = config.Get("election.node.process.start-message").(string)
+	setupMessage  = config.Get("election.node.process.initial-node-setup").(string)
+	timeoutExpire = config.Get("election.timeout.expired").(int)
+	timeoutHard   = config.Get("election.timeout.hard").(int)
 )
 
 // Messenger handles communication pertaining to created cluster
@@ -77,17 +78,26 @@ func responseMessage(conn *websocket.Conn, c *election.Cluster, exp chan bool) {
 
 func expireSocket(conn *websocket.Conn, exp chan bool) {
 	defer conn.Close()
-	duration := time.Minute * time.Duration(connectionTimeout)
+	expireTime := time.Minute * time.Duration(timeoutExpire)
+	hardResetTime := time.Minute * time.Duration(timeoutHard)
 	mw := time.Second * 2
-	closeCode := 4001
+	expireCode := 4001
+	hardResetCode := 4002
 
-	timer := time.NewTimer(duration)
+	expirationTimer := time.NewTimer(expireTime)
+	hardTimer := time.NewTimer(hardResetTime)
+
 	for {
 		select {
 		case <-exp:
-			timer.Reset(duration)
-		case <-timer.C:
-			msg := websocket.FormatCloseMessage(closeCode, "session expired due to inactivity")
+			expirationTimer.Reset(expireTime)
+		case <-expirationTimer.C:
+			msg := websocket.FormatCloseMessage(expireCode, "session expired due to inactivity")
+			conn.WriteControl(websocket.CloseMessage, msg, time.Now().Add(mw))
+			time.Sleep(mw)
+			return
+		case <-hardTimer.C:
+			msg := websocket.FormatCloseMessage(hardResetCode, "Maximum time hit for live connection")
 			conn.WriteControl(websocket.CloseMessage, msg, time.Now().Add(mw))
 			time.Sleep(mw)
 			return
