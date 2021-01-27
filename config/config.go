@@ -22,13 +22,13 @@ func setup() {
 	if initialized {
 		return
 	}
-	viper.AddConfigPath("./config")
-	viper.SetConfigName("config")
+	viper.AddConfigPath("./")
+	viper.SetConfigName("application")
 	viper.SetConfigType("yaml")
 	viper.BindEnv("port")
 	err := viper.ReadInConfig()
 	if err != nil {
-		log.Fatal("Config file get error: #%v ", err)
+		log.Fatal(err)
 	}
 	viper.AutomaticEnv()
 

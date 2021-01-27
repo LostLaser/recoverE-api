@@ -40,14 +40,13 @@ func Messenger(conn *websocket.Conn, count int, electionSetup server.Setup) {
 
 	go expireSocket(conn, exp)
 
-	// stream cluster events to client with a delay
+	// stream cluster events to client
 	for {
 		err := conn.WriteJSON(c.ReadEvent())
 		if err != nil {
 			log.Debug(err)
 			return
 		}
-		time.Sleep(time.Millisecond * 200)
 	}
 }
 
