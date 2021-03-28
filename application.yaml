@@ -1,3 +1,6 @@
+application:
+    log-level: development
+
 election:
     node:
         process:

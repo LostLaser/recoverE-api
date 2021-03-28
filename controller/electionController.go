@@ -10,6 +10,7 @@ import (
 	"github.com/LostLaser/recoverE-api/config"
 	"github.com/LostLaser/recoverE-api/service"
 	"github.com/gorilla/websocket"
+	"go.uber.org/zap"
 )
 
 var (
@@ -19,7 +20,7 @@ var (
 )
 
 // ElectionView handles the full interaction
-func ElectionView(w http.ResponseWriter, r *http.Request) {
+func ElectionView(w http.ResponseWriter, r *http.Request, log *zap.Logger) {
 
 	// input validation
 	keys := r.URL.Query()
@@ -67,5 +68,5 @@ func ElectionView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	service.Messenger(conn, count, electionSetup)
+	service.Messenger(conn, count, electionSetup, log)
 }
