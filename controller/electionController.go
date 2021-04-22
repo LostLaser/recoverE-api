@@ -20,7 +20,7 @@ var (
 )
 
 // ElectionView handles the full interaction
-func ElectionView(w http.ResponseWriter, r *http.Request, log *zap.Logger) {
+func ElectionView(w http.ResponseWriter, r *http.Request, logger *zap.Logger) {
 
 	// input validation
 	keys := r.URL.Query()
@@ -57,16 +57,19 @@ func ElectionView(w http.ResponseWriter, r *http.Request, log *zap.Logger) {
 			origin := r.Header.Get("origin")
 			for _, o := range allowedOrigins {
 				if o == origin {
+					logger.Debug("Request authorized with origin", zap.String("origin", origin))
 					return true
 				}
 			}
+			logger.Debug("Origin was not in the allow list", zap.String("origin", origin))
 			return false
 		},
 	}
 	conn, err := u.Upgrade(w, r, nil)
 	if err != nil {
+		logger.Debug(err.Error())
 		return
 	}
 
-	service.Messenger(conn, count, electionSetup, log)
+	service.Messenger(conn, count, electionSetup, logger)
 }

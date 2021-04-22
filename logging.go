@@ -9,7 +9,8 @@ import (
 )
 
 var (
-	logLevel = strings.ToUpper(config.Get("application.log-level").(string))
+	logLevelKey = "application.log-level"
+	logLevel    = strings.ToUpper(config.Get(logLevelKey).(string))
 )
 
 type loggingHandlerFunc = func(w http.ResponseWriter, r *http.Request, l *zap.Logger)
@@ -22,12 +23,14 @@ type loggingHandler struct {
 func loggingHandlerFactory() func(loggingHandlerFunc) *loggingHandler {
 	l, _ := zap.NewProduction()
 	switch logLevel {
-	case "DEVELOPMENT":
+	case "DEV":
 		l, _ = zap.NewDevelopment()
-	case "PRODUCTION":
+	case "PROD":
 		l, _ = zap.NewProduction()
 	case "NONE":
 		l = zap.NewNop()
+	default:
+		l.Warn("Unknown log level supplied", zap.String(logLevelKey, logLevel))
 	}
 	return func(hf loggingHandlerFunc) *loggingHandler {
 		return &loggingHandler{l, hf}
@@ -35,6 +38,5 @@ func loggingHandlerFactory() func(loggingHandlerFunc) *loggingHandler {
 }
 
 func (lh *loggingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	lh.logger.Debug("Got a request!")
 	lh.handlerFunc(w, r, lh.logger)
 }
