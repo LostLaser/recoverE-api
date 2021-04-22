@@ -17,8 +17,12 @@ func main() {
 }
 
 func handleRequests() {
-	http.HandleFunc("/election", controller.ElectionView)
+	m := http.NewServeMux()
+	withLogger := loggingHandlerFactory()
+
+	m.Handle("/", withLogger(controller.LandingView))
+	m.Handle("/election", withLogger(controller.ElectionView))
 
 	log.Println("Listening on port", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	log.Fatal(http.ListenAndServe(":"+port, m))
 }

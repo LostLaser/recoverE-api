@@ -7,7 +7,7 @@ import (
 	"github.com/LostLaser/election/server"
 	"github.com/LostLaser/recoverE-api/config"
 	"github.com/gorilla/websocket"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 var (
@@ -19,8 +19,8 @@ var (
 )
 
 // Messenger handles communication pertaining to created cluster
-func Messenger(conn *websocket.Conn, count int, electionSetup server.Setup) {
-	c := election.New(electionSetup, count, time.Second*4)
+func Messenger(conn *websocket.Conn, count int, electionSetup server.Setup, logger *zap.Logger) {
+	c := election.New(electionSetup, count, time.Second*4, logger)
 	defer c.Purge()
 	defer conn.Close()
 
@@ -30,27 +30,28 @@ func Messenger(conn *websocket.Conn, count int, electionSetup server.Setup) {
 		"payload": ids,
 	})
 	if err != nil {
-		log.Debug(err)
+		logger.Error(err.Error())
+		return
 	}
 
 	exp := make(chan (bool))
 
 	// receive messages
-	go responseMessage(conn, c, exp)
+	go responseMessage(conn, c, exp, logger)
 
-	go expireSocket(conn, exp)
+	go expireSocket(conn, exp, logger)
 
 	// stream cluster events to client
 	for {
 		err := conn.WriteJSON(c.ReadEvent())
 		if err != nil {
-			log.Debug(err)
+			logger.Debug(err.Error())
 			return
 		}
 	}
 }
 
-func responseMessage(conn *websocket.Conn, c *election.Cluster, exp chan bool) {
+func responseMessage(conn *websocket.Conn, c *election.Cluster, exp chan bool, logger *zap.Logger) {
 	defer conn.Close()
 	type message struct {
 		Action string
@@ -61,21 +62,22 @@ func responseMessage(conn *websocket.Conn, c *election.Cluster, exp chan bool) {
 		msg := message{}
 		err := conn.ReadJSON(&msg)
 		if err != nil {
-			log.Debug(err)
+			logger.Debug(err.Error())
 			return
 		}
 		exp <- false
 		switch action := msg.Action; action {
 		case stopMessage:
+			logger.Debug("Request to stop simulated server", zap.String("Cluster ID", c.ID), zap.String("Server ID", msg.ID))
 			c.StopServer(msg.ID)
 		case startMessage:
+			logger.Debug("Request to start simulated server", zap.String("Cluster ID", c.ID), zap.String("Server ID", msg.ID))
 			c.StartServer(msg.ID)
 		}
-
 	}
 }
 
-func expireSocket(conn *websocket.Conn, exp chan bool) {
+func expireSocket(conn *websocket.Conn, exp chan bool, logger *zap.Logger) {
 	defer conn.Close()
 	expireTime := time.Minute * time.Duration(timeoutExpire)
 	hardResetTime := time.Minute * time.Duration(timeoutHard)
@@ -91,11 +93,14 @@ func expireSocket(conn *websocket.Conn, exp chan bool) {
 		case <-exp:
 			expirationTimer.Reset(expireTime)
 		case <-expirationTimer.C:
-			msg := websocket.FormatCloseMessage(expireCode, "session expired due to inactivity")
+			expireMsg := "session expired due to inactivity"
+			logger.Debug(expireMsg)
+			msg := websocket.FormatCloseMessage(expireCode, expireMsg)
 			conn.WriteControl(websocket.CloseMessage, msg, time.Now().Add(mw))
 			time.Sleep(mw)
 			return
 		case <-hardTimer.C:
+			logger.Debug("Session hit hard timeout limit", zap.Duration("Hard timeout", expireTime))
 			msg := websocket.FormatCloseMessage(hardResetCode, "Maximum time hit for live connection")
 			conn.WriteControl(websocket.CloseMessage, msg, time.Now().Add(mw))
 			time.Sleep(mw)
